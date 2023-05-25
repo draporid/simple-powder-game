@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Powder Game</title>
+</head>
+<body>
+    <div>
+        <button id="btnWall" onclick="selectElement(1)">Wall</button>
+        <button id="btnSand" onclick="selectElement(2)">Sand</button>
+        <button id="btnWater" onclick="selectElement(3)">Water</button>
+        <button id="btnLava" onclick="selectElement(4)">Lava</button>
+        <button id="btnPause" onclick="togglePause()">Pause</button>
+    </div>
+    <canvas id="gameCanvas" width="800" height="600" style="border:1px solid #000000;"></canvas>
+    <script src="game.js"></script>
+</body>
+</html>

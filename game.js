@@ -15,7 +15,7 @@ const WALL = 1;
 const SAND = 2;
 const WATER = 3;
 const LAVA = 4;
-const STEAM = 5;
+const PLANT = 5;
 
 let grid = [];
 let currentElement = SAND;
@@ -28,7 +28,7 @@ const elements = {
     [SAND]: { color: 'yellow', fallSpeed: 1 },
     [WATER]: { color: 'blue', fallSpeed: 1, spread: 1 },
     [LAVA]: { color: 'red', fallSpeed: 1, spread: 1 },
-    [STEAM]: { color: 'lightgray', riseSpeed: 1 }
+    [PLANT]: { color: 'green' }
 };
 
 function initGrid() {
@@ -51,17 +51,9 @@ function updateGrid() {
             const element = grid[x][y];
             const elProperties = elements[element];
         
-            if (elProperties.fallSpeed || elProperties.riseSpeed) {
+            if (elProperties.fallSpeed) {
                 let nx = x;
-                let ny = y + (elProperties.fallSpeed || -elProperties.riseSpeed);
-
-                if (element === LAVA && grid[nx][ny] === WATER) {
-                    grid[nx][ny] = STEAM;
-                    grid[x][y] = EMPTY;
-                    drawCell(x, y);
-                    drawCell(nx, ny);
-                    continue;
-                }
+                let ny = y + elProperties.fallSpeed;
 
                 if (ny >= 0 && ny < gridHeight && nx >= 0 && nx < gridWidth && grid[nx][ny] === EMPTY) {
                     grid[nx][ny] = element;
@@ -69,9 +61,8 @@ function updateGrid() {
                     drawCell(x, y);
                     drawCell(nx, ny);
                 } else if (elProperties.spread) {
-                    // Try to spread out horizontally
                     const directions = [x - 1, x + 1];
-                    directions.sort(() => Math.random() - 0.5); // Randomize direction
+                    directions.sort(() => Math.random() - 0.5);
                     for (let dir of directions) {
                         if (dir >= 0 && dir < gridWidth && grid[dir][y] === EMPTY) {
                             grid[dir][y] = element;
@@ -82,6 +73,11 @@ function updateGrid() {
                         }
                     }
                 }
+            }
+
+            if (element === PLANT && y > 0 && grid[x][y-1] === WATER) {
+                grid[x][y-1] = PLANT;
+                drawCell(x, y-1);
             }
         }
     }
@@ -101,6 +97,22 @@ canvas.onmouseup = function() {
 canvas.onmousemove = function(event) {
     if (isMouseDown) {
         addElement(event);
+    }
+};
+
+canvas.ontouchstart = function(event) {
+    isMouseDown = true;
+    addElement(event.touches[0]); // get first touch event
+};
+
+canvas.ontouchend = function() {
+    isMouseDown = false;
+};
+
+canvas.ontouchmove = function(event) {
+    if (isMouseDown) {
+        event.preventDefault();
+        addElement(event.touches[0]); // get first touch event
     }
 };
 

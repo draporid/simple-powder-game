@@ -19,6 +19,7 @@ const PLANT = 5;
 
 let grid = [];
 let currentElement = SAND;
+let isMouseDown = false;
 let isTouchDown = false;
 let touchPosition = null;
 let isPaused = false;
@@ -76,27 +77,26 @@ function updateGrid() {
                 }
             }
 
-            if (element === PLANT && y > 0 && grid[x][y-1] === WATER) {
-                grid[x][y-1] = PLANT;
-                drawCell(x, y-1);
+            if (element === PLANT && y > 0 && grid[x][y - 1] === EMPTY) {
+                grid[x][y - 1] = PLANT;
+                drawCell(x, y - 1);
             }
         }
     }
-
     ctx.drawImage(offscreenCanvas, 0, 0);
 }
 
 canvas.onmousedown = function(event) {
-    isTouchDown = true;
+    isMouseDown = true;
     addElement(event);
 };
 
 canvas.onmouseup = function() {
-    isTouchDown = false;
+    isMouseDown = false;
 };
 
 canvas.onmousemove = function(event) {
-    if (isTouchDown) {
+    if (isMouseDown) {
         addElement(event);
     }
 };
@@ -113,33 +113,24 @@ canvas.ontouchend = function() {
 
 canvas.ontouchmove = function(event) {
     event.preventDefault();
-    touchPosition = getTouchPosition(event.touches[0]);
+    if (isTouchDown) {
+        addElement(event.touches[0]);
+    }
 };
 
 function addElement(event) {
-    touchPosition = getTouchPosition(event);
-    if (touchPosition) {
-        const {x, y} = touchPosition;
-        if (x >= 0 && x < gridWidth && y >= 0 && y < gridHeight) {
-            grid[x][y] = currentElement;
-            drawCell(x, y);
-        }
-    }
-}
-
-function getTouchPosition(event) {
     const rect = canvas.getBoundingClientRect();
     const x = Math.floor((event.clientX - rect.left) / cellSize);
     const y = Math.floor((event.clientY - rect.top) / cellSize);
-    return {x, y};
+    if (x >= 0 && x < gridWidth && y >= 0 && y < gridHeight) {
+        grid[x][y] = currentElement;
+        drawCell(x, y);
+    }
 }
 
 function gameLoop() {
     if (!isPaused) {
         updateGrid();
-    }
-    if (isTouchDown) {
-        addElement({clientX: touchPosition.x * cellSize + canvas.getBoundingClientRect().left, clientY: touchPosition.y * cellSize + canvas.getBoundingClientRect().top});
     }
     requestAnimationFrame(gameLoop);
 }
